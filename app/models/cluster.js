@@ -19,6 +19,8 @@ export default Resource.extend(Grafana, ResourceUsage, {
   intl:        service(),
   router:      service(),
   scope:       service(),
+  settings:    service(),
+  access:      service(),
 
   clusterRoleTemplateBindings: hasMany('id', 'clusterRoleTemplateBinding', 'clusterId'),
   etcdbackups:                 hasMany('id', 'etcdbackup', 'clusterId'),
@@ -30,6 +32,7 @@ export default Resource.extend(Grafana, ResourceUsage, {
   grafanaDashboardName:        'Cluster',
   isMonitoringReady:           false,
   _cachedConfig:               null,
+  isAdminUser:                 alias('access.admin'),
   clusterTemplate:             reference('clusterTemplateId'),
   clusterTemplateRevision:     reference('clusterTemplateRevisionId'),
   machines:                    alias('nodes'),
@@ -273,8 +276,10 @@ export default Resource.extend(Grafana, ResourceUsage, {
     return false;
   }),
 
-  availableActions: computed('actionLinks.{rotateCertificates}', 'canSaveAsTemplate', function() {
+  availableActions: computed('actionLinks.{rotateCertificates}', 'canSaveAsTemplate', 'isAdminCluster', 'isAdminUser', function() {
     const a = get(this, 'actionLinks') || {};
+    const isAdminCluster = this.isAdminCluster;
+    const isAdminUser = this.isAdminUser;
 
     return [
       {
@@ -301,6 +306,18 @@ export default Resource.extend(Grafana, ResourceUsage, {
         action:    'saveAsTemplate',
         enabled:   this.canSaveAsTemplate,
       },
+      {
+        label:   'action.makeAdmin',
+        icon:    'icon icon-star-fill',
+        action:  'makeAdmin',
+        enabled: !isAdminCluster && !!isAdminUser
+      },
+      {
+        label:   'action.resetAdmin',
+        icon:    'icon icon-star-line',
+        action:  'resetAdmin',
+        enabled: isAdminCluster && !!isAdminUser
+      },
     ];
   }),
 
@@ -312,6 +329,16 @@ export default Resource.extend(Grafana, ResourceUsage, {
 
   isWindows:  computed('windowsPreferedCluster', function() {
     return !!get(this, 'windowsPreferedCluster');
+  }),
+
+  isAdminCluster: computed('settings.adminClusterId', function() {
+    return this.settings.adminClusterId === this.id;
+  }),
+
+  adminCluster: computed('isAdminCluster', function() {
+    if ( this.isAdminCluster ) {
+      return 'admin cluster'
+    }
   }),
 
   unhealthyComponents: computed('componentStatuses.@each.conditions', function() {
@@ -385,6 +412,21 @@ export default Resource.extend(Grafana, ResourceUsage, {
     return out;
   }),
 
+  setAdmin(id) {
+    if ( this.settings.globalMonitoringEnabled === 'true' && this.globalStore.all('cluster').findBy('id', this.settings.adminClusterId) ) {
+      this.growl.fromError(this.intl.t('globalMonitoringPage.error.globalMonitoringEnabled'), '');
+
+      return;
+    }
+    this.globalStore.find('setting', C.SETTING.ADMIN_CLUSTER_ID)
+      .then((s) => {
+        set(s, 'value', id);
+        s.save();
+      }).catch((err = {}) => {
+        this.growl.fromError(get(err, 'body.message'));
+      });
+  },
+
   actions: {
     backupEtcd() {
       const getBackupType = () => {
@@ -413,6 +455,14 @@ export default Resource.extend(Grafana, ResourceUsage, {
 
     restoreFromEtcdBackup() {
       get(this, 'modalService').toggleModal('modal-restore-backup', { cluster: this, });
+    },
+
+    makeAdmin() {
+      this.setAdmin(this.id);
+    },
+
+    resetAdmin() {
+      this.setAdmin('');
     },
 
     promptDelete() {

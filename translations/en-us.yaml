@@ -1953,6 +1953,62 @@ destinationRulePage:
     subsets:
       label: Subsets
 
+globalMonitoringPage:
+  header: Global Monitoring
+  enabled: "Global Monitoring is enabled. You can query your metrics across multiple clusters if cluster monitoring <code>v0.0.7</code> or above enabled inside the clusters."
+  disabled: "Global Monitoring is not enabled yet. Please click Enable button to enable it."
+  notReady: Installing Global Monitoring into the system project of admin cluster...
+  updating: Updating Global Monitoring in the system project of admin cluster...
+  version: Global Monitoring Version
+  disable: Disable
+  confirmDisable: "Are you sure?  Click again to disable global monitoring"
+  enableActionLabel: Enable
+  noAdminCluster: There is no admin cluster defined. Please go to cluster list and set a cluster as admin cluster.
+  adminClusterUnavailable: Admin cluster is unavailable.
+  error:
+    globalMonitoringEnabled: Cannot reset admin cluster. Please disable global monitoring first.
+  customAnswers:
+    title: Custom Answers
+    detail: Configure custom answers.
+  nodeSelector:
+    addSelectorLabel: Add Selector
+    helpText: Select the nodes where {component} workloads will be scheduled to
+  links:
+    grafana:
+      label: Grafana UI
+    globalMonitoring:
+      label: Global Dashboard
+    thanos:
+      label: Thanos UI
+  thanos:
+    title: Thanos Query
+    detail: Thanos Query configuration.
+  grafana:
+    title: Grafana
+    detail: Grafana configuration.
+    enablePersistence:
+      label: Enable Persistent Storage for Grafana
+    enableGrafanaSidecar:
+      label: Enable Grafana Dashboard Provisioning Sidecar
+    size:
+      label: Grafana Persistent Volume Size
+      placeholder: e.g. 10Gi
+    storageClass:
+      label: Default StorageClass for Grafana
+  insufficientSize:
+    total:
+      cpu: Please make sure you have at least {minCpu} milli CPUs available to {action} Global Monitoring.
+      memory: Please make sure you have at least {minMemory} MiB of memory available to {action} Global Monitoring.
+      all: Please make sure you have at least {minCpu} milli CPUs and {minMemory} MiB of memory available to {action} Global Monitoring.
+    workload:
+      cpu: Please make sure you have at least one node with {cpu} milli CPUs available to deploy {component} workload.
+      memory: Please make sure you have at least one node with {memory} MiB of memory available to deploy {component} workload.
+      all: Please make sure you have at least one node with {cpu} milli CPUs and {memory} MiB of memory available to deploy {component} workload.
+    selectors:
+      cpu: Please make sure you have at least one node matches node selectors with {cpu} milli CPUs available to enable {component} workload.
+      memory: Please make sure you have at least one node matches node selectors with {memory} MiB of memory available to enable {component} workload.
+      all: Please make sure you have at least one node matches node selectors with {cpu} milli CPUs and {memory} MiB of memory available to enable {component} workload.
+      unsupported: 'Node selector with value "true", "false" or number is not supported'
 globalRegistryPage:
   header: Global Registry
   enabled: Registry is enabled. Click <a href="{url}/registry" target="_blank" rel="nofollow noopener noreferrer">here</a> to open Harbor UI in a new tab.
@@ -3232,6 +3288,7 @@ clusterRow:
   addHost: Add Nodes
   importCluster: Use existing Kubernetes
   loginDefault: Login
+  adminCluster: Admin Cluster
 
 clusterTemplateRow:
   label: 'RKE Template'
@@ -9304,6 +9361,7 @@ nav:
     globalDns: Global DNS
     globalDnsEntries: Global DNS Entries
     globalDnsProviders: Global DNS Providers
+    globalMonitoring: Global Monitoring
     globalRegistry: Global Registry
     multiClusterApps: Apps
     security:
@@ -9380,6 +9438,7 @@ action:
   exportConfig: Export Config
   garbageCollect: Cleanup
   logs: View Logs
+  makeAdmin: Set as Admin Cluster
   makeDefault: Set as Default
   move: Move
   mute: Mute
@@ -9397,6 +9456,7 @@ action:
       message: A group membership refresh has been triggered for all users.
   remove: Delete
   replay: Replay
+  resetAdmin: Reset Admin Cluster
   resetDefault: Reset default
   restart: Restart
   restoreFromEtcdBackup: Restore Snapshot

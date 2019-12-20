@@ -11,6 +11,15 @@
     {{#link-to-external "authenticated.cluster" model.id}}
       {{model.displayName}}
     {{/link-to-external}}
+    {{#if model.isAdminCluster}}
+      {{#tooltip-element
+        type="tooltip-basic"
+        model=(t "clusterRow.adminCluster")
+        tooltipTemplate="tooltip-static"
+      }}
+        <i class="icon icon-star-fill text-warning"/>
+      {{/tooltip-element}}
+    {{/if}}
 
     {{#if (and model.displayWarnings.length (not-eq model.state "waiting") (not-eq model.state "provisioning"))}}
       {{#tooltip-element

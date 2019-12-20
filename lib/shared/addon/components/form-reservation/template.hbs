@@ -6,7 +6,7 @@
     </label>
     <div class="input-group">
       {{input-integer
-        min="0"
+        min=requestCpu
         step="100"
         id=(concat "input-limit-cpu-" component)
         value=limitCpu
@@ -25,7 +25,7 @@
     </label>
     <div class="input-group">
       {{input-integer
-        min="4"
+        min=requestMemory
         step="1"
         value=limitMemory
         id=(concat "input-limit-memory-" component)
@@ -47,7 +47,8 @@
     </label>
     <div class="input-group">
       {{input-integer
-        min="0"
+        min="1"
+        max=limitCpu
         step="100"
         id=(concat "input-request-cpu-" component)
         value=requestCpu
@@ -67,6 +68,7 @@
     <div class="input-group">
       {{input-integer
         min="4"
+        max=limitMemory
         step="1"
         id=(concat "input-request-memory-" component)
         value=requestMemory

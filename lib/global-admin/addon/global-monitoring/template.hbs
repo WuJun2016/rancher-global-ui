@@ -1,0 +1,22 @@
+{{#if model.adminClusterDefined}}
+  <ThanosCatalog
+    @app={{model.app}}
+    @cluster={{model.cluster}}
+    @project={{model.project}}
+    @nsExists={{model.nsExists}}
+    @storageClasses={{model.storageClasses}}
+    @persistentVolumeClaims={{model.persistentVolumeClaims}}
+    @namespace={{model.namespace}}
+    @cancel={{action "cancel"}}
+  />
+{{else if model.adminClusterUnavailable}}
+  <BannerMessage
+    @message={{t "globalMonitoringPage.adminClusterUnavailable"}}
+    @color="bg-warning"
+  />
+{{else}}
+  <BannerMessage
+    @message={{t "globalMonitoringPage.noAdminCluster"}}
+    @color="bg-info"
+  />
+{{/if}}

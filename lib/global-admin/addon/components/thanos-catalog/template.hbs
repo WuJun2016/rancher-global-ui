@@ -1,0 +1,239 @@
+<section class="header clearfix">
+  <h1 class="pull-left">
+    {{t "globalMonitoringPage.header"}}
+  </h1>
+</section>
+
+{{#if (and enabled ready)}}
+  <BannerMessage
+    @color="bg-info"
+    @message={{t "globalMonitoringPage.enabled" htmlSafe=true}}
+  />
+{{else if (and enabled updatingApp)}}
+  <BannerMessage
+    @color="bg-warning"
+    @message={{t "globalMonitoringPage.updating"}}
+  />
+{{else if enabled}}
+  <BannerMessage
+    @color="bg-warning"
+    @message={{t "globalMonitoringPage.notReady"}}
+  />
+{{else}}
+  <BannerMessage
+    @color="bg-warning"
+    @message={{t "globalMonitoringPage.disabled"}}
+  />
+{{/if}}
+
+{{#if (and enabled ready)}}
+  <div class="row">
+    <ComponentStatus
+      @label="globalMonitoringPage.links.globalMonitoring.label"
+      @url={{globalMonitoringUrl}}
+      @logo="global-monitoring"
+    />
+    <ComponentStatus
+      @label="globalMonitoringPage.links.grafana.label"
+      @url={{grafanaUrl}}
+      @logo="grafana"
+    />
+    <ComponentStatus
+      @label="globalMonitoringPage.links.thanos.label"
+      @url={{thanosUrl}}
+      @logo="thanos"
+    />
+  </div>
+{{/if}}
+
+<div class="row mt-10 mb-10">
+  <div class="col span-6">
+    <label class="acc-label">
+      {{t "globalMonitoringPage.version"}}
+      {{#if (and enabled latestVersion templateVersion (not-eq latestVersion templateVersion))}}
+        <span class="bg-warning pt-0 pb-0 pl-5 pr-5">
+          {{t "monitoringPage.upgradeAvailable" version=latestVersion}}
+        </span>
+      {{/if}}
+    </label>
+    <div>
+      <NewSelect
+        @classNames="form-control"
+        @content={{chartVersions}}
+        @value={{templateVersion}}
+      />
+    </div>
+  </div>
+</div>
+
+<AccordionList as | al expandFn |>
+  <AccordionListItem
+    @title={{t "globalMonitoringPage.thanos.title"}}
+    @detail={{t "globalMonitoringPage.thanos.detail"}}
+    @expandAll={{al.expandAll}}
+    @expand={{action expandFn}}
+    @expandOnInit={{false}}
+  >
+    <FormReservation
+      @component="Thanos Query"
+      @requestCpu={{config.thanosRequestCpu}}
+      @requestMemory={{config.thanosRequestMemory}}
+      @limitCpu={{config.thanosLimitCpu}}
+      @limitMemory={{config.thanosLimitMemory}}
+    />
+
+    <div class="row">
+      <div class="col span-12">
+        <label class="acc-label">
+          {{t "globalMonitoringPage.nodeSelector.helpText" component="Thanos Query"}}
+        </label>
+        <FormKeyValue
+          @changedArray={{action (mut thanosNodeSelectors)}}
+          @initialMap={{thanosNodeSelector}}
+          @allowEmptyValue={{true}}
+          @addActionLabel="globalMonitoringPage.nodeSelector.addSelectorLabel"
+        />
+      </div>
+    </div>
+    <div class="row">
+      <div class="col span-12">
+        <SchedulingToleration
+          @editing={{true}}
+          @tolerate={{thanosTolerations}}
+          @title={{t "formScheduling.toleration.workloadTitle" workload="Thanos Query"}}
+        />
+      </div>
+    </div>
+  </AccordionListItem>
+
+  <AccordionListItem
+    @title={{t "globalMonitoringPage.grafana.title"}}
+    @detail={{t "globalMonitoringPage.grafana.detail"}}
+    @expandAll={{al.expandAll}}
+    @expand={{action expandFn}}
+    @expandOnInit={{false}}
+  >
+    <FormReservation
+      @component="Grafana"
+      @requestCpu={{config.grafanaRequestCpu}}
+      @requestMemory={{config.grafanaRequestMemory}}
+      @limitCpu={{config.grafanaLimitCpu}}
+      @limitMemory={{config.grafanaLimitMemory}}
+    />
+
+    <div class="row">
+      <div class="col span-6">
+        <label class="acc-label">
+          {{t "globalMonitoringPage.grafana.enablePersistence.label"}}
+        </label>
+        {{schema/input-boolean value=config.enableGrafanaPersistence}}
+      </div>
+    </div>
+    {{#if config.enableGrafanaPersistence}}
+      <div class="row">
+        <div class="col span-6">
+          <label class="acc-label">
+            {{t "globalMonitoringPage.grafana.size.label"}}
+          </label>
+          {{schema/input-string
+            value=config.grafanaPersistenceSize
+            placeholder=(t "globalMonitoringPage.grafana.size.placeholder")
+          }}
+        </div>
+        <div class="col span-6">
+          <label class="acc-label">
+            {{t "globalMonitoringPage.grafana.storageClass.label"}}
+          </label>
+          {{schema/input-storageclass storageClassesOptions=storageClasses value=config.grafanaStorageClass}}
+        </div>
+      </div>
+    {{/if}}
+
+    <div class="row">
+      <div class="col span-6">
+        <label class="acc-label">
+          {{t "globalMonitoringPage.grafana.enableGrafanaSidecar.label"}}
+        </label>
+        {{schema/input-boolean value=config.enableGrafanaSidecar}}
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col span-12">
+        <label class="acc-label">
+          {{t "globalMonitoringPage.nodeSelector.helpText" component="Grafana"}}
+        </label>
+        <FormKeyValue
+          @changedArray={{action (mut grafanaNodeSelectors)}}
+          @initialMap={{grafanaNodeSelector}}
+          @allowEmptyValue={{true}}
+          @addActionLabel="globalMonitoringPage.nodeSelector.addSelectorLabel"
+        />
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col span-12">
+        <SchedulingToleration
+          @editing={{true}}
+          @tolerate={{grafanaTolerations}}
+          @title={{t "formScheduling.toleration.workloadTitle" workload="Grafana"}}
+        />
+      </div>
+    </div>
+  </AccordionListItem>
+
+  <AccordionListItem
+    @title={{t "globalMonitoringPage.customAnswers.title"}}
+    @detail={{t "globalMonitoringPage.customAnswers.detail"}}
+    @expandAll={{al.expandAll}}
+    @expand={{action expandFn}}
+    @expandOnInit={{false}}
+  >
+    <FormKeyValue
+      @initialMap={{customAnswers}}
+      @changed={{action (mut customAnswers)}}
+      @allowEmptyValue={{true}}
+      @addInitialEmptyRow={{true}}
+      @editing={{true}}
+      @header={{t "newCatalog.answers.label"}}
+      @addActionLabel="newCatalog.answers.addAction"
+      @keyLabel="newContainer.environment.keyLabel"
+      @keyPlaceholder="newContainer.environment.keyPlaceholder"
+      @valueLabel="newContainer.environment.valueLabel"
+      @valuePlaceholder="newContainer.environment.valuePlaceholder"
+    />
+  </AccordionListItem>
+</AccordionList>
+
+{{#if (or totalWarning thanosWarning grafanaWarning)}}
+  <BannerMessage @color="bg-warning">
+    {{#if totalWarning}}
+      <p>{{totalWarning}}</p>
+    {{else}}
+      <p>{{thanosWarning}}</p>
+      <p>{{grafanaWarning}}</p>
+    {{/if}}
+  </BannerMessage>
+{{/if}}
+
+<TopErrors @errors={{errors}} />
+
+<SaveCancel
+  @saveDisabled={{saveDisabled}}
+  @editing={{enabled}}
+  @createLabel="globalMonitoringPage.enableActionLabel"
+  @save={{action "save"}}
+  @saved={{saved}}
+  @cancelDisabled={{true}}
+>
+  {{#if (and enabled confirmDisable)}}
+    <button class="btn bg-error" {{action "disable"}}>
+      {{t "globalMonitoringPage.confirmDisable"}}
+    </button>
+  {{else if enabled}}
+    <button class="btn bg-error" {{action "promptDisable"}}>
+      {{t "globalMonitoringPage.disable"}}
+    </button>
+  {{/if}}
+</SaveCancel>
